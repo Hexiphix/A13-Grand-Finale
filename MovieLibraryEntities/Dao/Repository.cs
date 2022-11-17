@@ -22,16 +22,25 @@ namespace MovieLibraryEntities.Dao
 
         public IEnumerable<Movie> GetAll()
         {
-            return _context.Movies.ToList();
+            //For whatever reason, right after using db.Movies.Update(updateMovie);
+            //Using _context ends not updating, or, quite strangly, fall behind, and apply updates only after other updates occur
+            //Changing GetAll and Search to use var db seems to solve this issue
+            using (var db = new MovieContext())
+            {
+                return db.Movies.ToList();
+            }
         }
 
         public IEnumerable<Movie> Search(string searchString)
         {
-            var allMovies = _context.Movies;
-            var listOfMovies = allMovies.ToList();
-            var temp = listOfMovies.Where(x => x.Title.Contains(searchString, StringComparison.CurrentCultureIgnoreCase));
+            using (var db = new MovieContext())
+            {
+                var allMovies = db.Movies;
+                var listOfMovies = allMovies.ToList();
+                var temp = listOfMovies.Where(x => x.Title.Contains(searchString, StringComparison.CurrentCultureIgnoreCase));
 
-            return temp;
+                return temp;
+            }
         }
     }
 }

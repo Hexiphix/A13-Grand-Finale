@@ -1,10 +1,13 @@
 ﻿using ConsoleTables;
 using Microsoft.Extensions.Logging;
+using MovieLibraryEntities.Context;
 using MovieLibraryEntities.Dao;
+using MovieLibraryEntities.Models;
 using MovieLibraryOO.Dao;
 using MovieLibraryOO.Dto;
 using MovieLibraryOO.Mappers;
 using System;
+using System.Linq;
 
 namespace MovieLibraryOO.Services
 {
@@ -46,13 +49,143 @@ namespace MovieLibraryOO.Services
                         break;
                     case Menu.MenuOptions.Add:
                         _logger.LogInformation("Adding a new movie");
-                        //menu.GetUserInput();
+
+                        //Gets the Movie Title
+                        var movieTitle = menu.GetUserResponse("Enter the Movie's", "Title:", "green");
+
+                        //(Redundent thanks to the use of menu) Ensures the Title isn't null or only spaces
+                        if (string.IsNullOrWhiteSpace(movieTitle))
+                        {
+                            Console.WriteLine("The Title cannot be blank!");
+                        }
+                        else
+                        {
+                            using (var db = new MovieContext())
+                            {
+                                //Ensures the given title doesn't already exist in the database
+                                if (db.Movies.FirstOrDefault(x => x.Title == movieTitle) != null)
+                                {
+                                    Console.WriteLine("That movie already exists in this database!");
+                                }
+                                else
+                                {
+                                    //Gets the Movie's Release Date
+                                    var movieRelease = menu.GetUserResponse($"Enter {movieTitle}'s", "Release Date:", "green");
+
+                                    //Ensures the date given is actually a date
+                                    try
+                                    {
+                                        var movieReleaseDate = DateTime.Parse(movieRelease);
+
+                                        //Creates and adds the movie to the database
+                                        var movie = new Movie()
+                                        {
+                                            Title = movieTitle,
+                                            ReleaseDate = movieReleaseDate
+                                        };
+                                        db.Movies.Add(movie);
+                                        db.SaveChanges();
+
+                                        //Confirms that the addition of the movie in the database
+                                        var newMovie = db.Movies.FirstOrDefault(x => x.Title == movieTitle);
+                                        Console.WriteLine($"({newMovie.Id}) {newMovie.Title}, released: {newMovie.ReleaseDate}");
+                                    }
+                                    catch (FormatException ex)
+                                    {
+                                        Console.WriteLine("The date entered isn't valid!");
+                                    }
+                                }
+                            }
+                        }
                         break;
                     case Menu.MenuOptions.Update:
                         _logger.LogInformation("Updating an existing movie");
+
+                        //Gets the Title of the Movie getting UPDATED
+                        var oldMovieTitle = menu.GetUserResponse("Enter the Title of the Movie to", "Update:", "yellow");
+                        
+                        using (var db = new MovieContext())
+                        {
+                            //Ensures the given title exists in the database
+                            var updateMovie = db.Movies.FirstOrDefault(x => x.Title == oldMovieTitle);
+                            if (updateMovie != null)
+                            {
+                                //Gets the Movie's NEW Title
+                                var newMovieTitle = menu.GetUserResponse("Enter the Movie's", "New/Correct Title:", "green");
+
+                                //(Redundent thanks to the use of menu) Ensures the Title isn't null or only spaces
+                                if (string.IsNullOrWhiteSpace(newMovieTitle))
+                                {
+                                    Console.WriteLine("The Title cannot be blank!");
+                                } 
+                                //Ensures the given title doesn't already exist in the database and isn't keeping the same Title
+                                else if (db.Movies.FirstOrDefault(x => x.Title == newMovieTitle) != null && updateMovie.Title != newMovieTitle) 
+                                {
+                                    Console.WriteLine("That movie already exists in this database under a different id!");
+                                }
+                                else
+                                {
+                                    //Gets the Movie's NEW Release Date
+                                    var newMovieRelease = menu.GetUserResponse($"Enter {newMovieTitle}'s", "New/Correct Release Date:", "green");
+
+                                    //Ensures the date given is actually a date
+                                    try
+                                    {
+                                        var newMovieReleaseDate = DateTime.Parse(newMovieRelease);
+                            
+                                        Console.WriteLine($"({updateMovie.Id}) {updateMovie.Title}, released: {updateMovie.ReleaseDate}");
+
+                                        //Updates the movie in the database
+                                        updateMovie.Title = newMovieTitle;
+                                        updateMovie.ReleaseDate = newMovieReleaseDate;
+                                        db.Movies.Update(updateMovie);
+                                        db.SaveChanges();
+
+                                        //Confirms that the movie was updated in the database
+                                        Console.WriteLine("The details above, have now been replaced with the following: ");
+                                        Console.WriteLine($"({updateMovie.Id}) {updateMovie.Title}, released: {updateMovie.ReleaseDate}");
+                                    }
+                                    catch (FormatException ex)
+                                    {
+                                        Console.WriteLine("The date entered isn't valid!");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("That movie doesn't exists in this database!");
+                                Console.WriteLine("Check your spelling and try again");
+                            }
+                        }
                         break;
                     case Menu.MenuOptions.Delete:
                         _logger.LogInformation("Deleting a movie");
+
+                        //Gets the Title of the Movie getting DELETED
+                        var deletingMovieTitle = menu.GetUserResponse("Enter The Title of the Movie to", "DELETE:", "red");
+
+                        using (var db = new MovieContext())
+                        {
+                            //Verifies that the Movie exists in the database
+                            var deleteMovie = db.Movies.FirstOrDefault(x => x.Title == deletingMovieTitle);
+                            if (deleteMovie != null)
+                            {
+                                //Displays the details of the movie thats about to be DELETED from the database
+                                Console.WriteLine($"({deleteMovie.Id}) {deleteMovie.Title}, released: {deleteMovie.ReleaseDate}");
+
+                                //Deletes the movie from the database
+                                db.Movies.Remove(deleteMovie);
+                                db.SaveChanges();
+
+                                //Confirms that the program at least attempted to the delete the given movie and didn't throw an error
+                                Console.WriteLine("This Movie has been deleted");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"{deletingMovieTitle} doesn't exist in the database");
+                                Console.WriteLine("Check your spelling and try again");
+                            }
+                        }
                         break;
                     case Menu.MenuOptions.Search:
                         _logger.LogInformation("Searching for a movie");
