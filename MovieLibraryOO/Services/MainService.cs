@@ -1,4 +1,5 @@
 ﻿using ConsoleTables;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MovieLibraryEntities.Context;
 using MovieLibraryEntities.Dao;
@@ -17,13 +18,15 @@ namespace MovieLibraryOO.Services
         private readonly IMovieMapper _movieMapper;
         private readonly IRepository _repository;
         private readonly IFileService _fileService;
+        private readonly IUserService _userService;
 
-        public MainService(ILogger<MainService> logger, IMovieMapper movieMapper, IRepository repository, IFileService fileService)
+        public MainService(ILogger<MainService> logger, IMovieMapper movieMapper, IRepository repository, IFileService fileService, IUserService userService)
         {
             _logger = logger;
             _movieMapper = movieMapper;
             _repository = repository;
             _fileService = fileService;
+            _userService = userService;
         }
 
         public void Invoke()
@@ -193,6 +196,9 @@ namespace MovieLibraryOO.Services
                         var searchedMovies = _repository.Search(userSearchTerm);
                         movies = _movieMapper.Map(searchedMovies);
                         ConsoleTable.From<MovieDto>(movies).Write();
+                        break;
+                    case Menu.MenuOptions.EditUsers:
+                        _userService.Invoke();
                         break;
                 }
             }
