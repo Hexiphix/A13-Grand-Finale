@@ -16,7 +16,8 @@ namespace MovieLibraryOO
             Update,
             Delete,
             Search,
-            EditUsers,
+            ToUsers,
+            ToRatings,
             Exit
         }
 
@@ -29,6 +30,14 @@ namespace MovieLibraryOO
             ListOccupationsFromDb,
             AddOccupation,
             DeleteOccupation,
+            BackToMovies
+        }
+
+        public enum RatingMenuOptions
+        {
+            ListFromDb,
+            AddRating,
+            DeleteRating,
             BackToMovies
         }
 
@@ -58,6 +67,18 @@ namespace MovieLibraryOO
                     .AddChoices(menuOptions));
 
             return (UserMenuOptions)Enum.Parse(typeof(UserMenuOptions), choice);
+        }
+
+        public RatingMenuOptions ChooseRatingAction()
+        {
+            var menuOptions = Enum.GetNames(typeof(RatingMenuOptions));
+
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("Choose your [green]rating menu action[/]?")
+                    .AddChoices(menuOptions));
+
+            return (RatingMenuOptions)Enum.Parse(typeof(RatingMenuOptions), choice);
         }
 
         public void Exit()

@@ -8,5 +8,6 @@ namespace MovieLibraryEntities.Dao
         IEnumerable<Movie> Search(string searchString);
         IEnumerable<User> GetAllUser();
         IEnumerable<Occupation> GetAllOccupation();
+        IEnumerable<UserMovie> GetAllUserMovie();
     }
 }

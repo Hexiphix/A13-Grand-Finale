@@ -8,6 +8,7 @@ using MovieLibraryOO.Mappers.OccupationMap;
 using MovieLibraryOO.Mappers.UserMap;
 using System;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 
 namespace MovieLibraryOO.Services
@@ -90,11 +91,12 @@ namespace MovieLibraryOO.Services
                                 var userGender = menu.GetUserResponse("Enter the User's", "Gender:", "green");
 
                                 var _usZipRegEx = @"^\d{5}(?:[-\s]\d{4})?$";
+                                var _caZipRegEx = @"^([ABCEGHJKLMNPRSTVXY]\d[ABCEGHJKLMNPRSTVWXYZ])\ {0,1}(\d[ABCEGHJKLMNPRSTVWXYZ]\d)$";
 
                                 //Gets the Users Zip Code
                                 var userZipCode = menu.GetUserResponse("Enter the User's", "ZipCode:", "green");
 
-                                if (!Regex.Match(userZipCode, _usZipRegEx).Success)
+                                if ((!Regex.Match(userZipCode, _usZipRegEx).Success) && (!Regex.Match(userZipCode, _caZipRegEx).Success))
                                 {
                                     Console.WriteLine("Not a valid Zip Code!");
                                 }
@@ -122,6 +124,9 @@ namespace MovieLibraryOO.Services
 
                                             db.Users.Add(user);
                                             db.SaveChanges();
+
+                                            //Confirms that the addition of the user in the database
+                                            Console.WriteLine($"({user.Id}), age: {user.Age}, gender: {user.Gender}, zipcode: {user.ZipCode}, occupation id: {user.OccupationId}");
                                         }
                                     }
                                 }

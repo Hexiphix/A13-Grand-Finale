@@ -19,14 +19,16 @@ namespace MovieLibraryOO.Services
         private readonly IRepository _repository;
         private readonly IFileService _fileService;
         private readonly IUserService _userService;
+        private readonly IRatingService _ratingService;
 
-        public MainService(ILogger<MainService> logger, IMovieMapper movieMapper, IRepository repository, IFileService fileService, IUserService userService)
+        public MainService(ILogger<MainService> logger, IMovieMapper movieMapper, IRepository repository, IFileService fileService, IUserService userService, IRatingService ratingService)
         {
             _logger = logger;
             _movieMapper = movieMapper;
             _repository = repository;
             _fileService = fileService;
             _userService = userService;
+            _ratingService = ratingService;
         }
 
         public void Invoke()
@@ -194,11 +196,47 @@ namespace MovieLibraryOO.Services
                         _logger.LogInformation("Searching for a movie");
                         var userSearchTerm = menu.GetUserResponse("Enter your", "search string:", "green");
                         var searchedMovies = _repository.Search(userSearchTerm);
-                        movies = _movieMapper.Map(searchedMovies);
-                        ConsoleTable.From<MovieDto>(movies).Write();
+                        var table = new ConsoleTable("Id", "Title", "ReleaseDate", "Genres");
+
+                        //A table must be constructed which retrieves the genres of that result from the search
+                        //Try to be specific, as the large number of loops needed to achieve this don't play well with the program's performance
+                        using (var db = new MovieContext())
+                        {
+                            var theMovieGenres = db.MovieGenres;
+                            var listOfMovieGenre = theMovieGenres.ToList();
+
+                            foreach (var movie in searchedMovies)
+                            {
+                                int genreCount = 0;
+                                var genreString = "";
+                                var genreList = listOfMovieGenre.Where(x => x.MovieId.Equals(movie.Id));
+                                foreach (var movieGenre in genreList)
+                                {
+                                    var genre = db.Genres.FirstOrDefault(x => x.Id == movieGenre.GenreId).Name;
+
+                                    if (genreCount == 0)
+                                    {
+                                        genreString = $"{genre}";
+                                    } else { 
+                                        genreString = $"{genreString}, {genre}";
+                                    }
+                                    genreCount++;
+                                }
+
+                                table.AddRow(movie.Id, movie.Title, movie.ReleaseDate, genreString);
+                            }
+                        }
+
+                        Console.WriteLine(table);
+
+                        //movies = _movieMapper.Map(searchedMovies);
+                        //ConsoleTable.From<MovieDto>(movies).Write();
                         break;
-                    case Menu.MenuOptions.EditUsers:
+                    case Menu.MenuOptions.ToUsers:
                         _userService.Invoke();
+                        break;
+                    case Menu.MenuOptions.ToRatings:
+                        _ratingService.Invoke();
                         break;
                 }
             }

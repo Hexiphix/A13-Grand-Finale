@@ -58,5 +58,14 @@ namespace MovieLibraryEntities.Dao
                 return db.Occupations.ToList();
             }
         }
+
+        //Way too many ratings to ever be fully visable
+        public IEnumerable<UserMovie> GetAllUserMovie()
+        {
+            using (var db = new MovieContext())
+            {
+                return db.UserMovies.ToList();
+            }
+        }
     }
 }

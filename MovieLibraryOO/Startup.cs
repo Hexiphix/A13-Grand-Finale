@@ -7,6 +7,7 @@ using MovieLibraryOO.Dao;
 using MovieLibraryOO.Mappers;
 using MovieLibraryOO.Mappers.OccupationMap;
 using MovieLibraryOO.Mappers.UserMap;
+using MovieLibraryOO.Mappers.UserMovieMap;
 using MovieLibraryOO.Services;
 using Spectre.Console;
 
@@ -30,15 +31,21 @@ public class Startup
         // Add new lines of code here to register any interfaces and concrete services you create
         services.AddTransient<IMainService, MainService>();
         services.AddTransient<IUserService, UserService>();
+        services.AddTransient<IRatingService, RatingService>();
         services.AddTransient<IFileService, FileService>();
+
         services.AddSingleton<IRepository, Repository>();
         services.AddSingleton<IMovieMapper, MovieMapper>();
         services.AddSingleton<IUserMapper, UserMapper>();
         services.AddSingleton<IOccupationMapper, OccupationMapper>();
+        services.AddSingleton<IUserMovieMapper, UserMovieMapper>();
+
         services.AddDbContextFactory<MovieContext>();
+
         services.AddAutoMapper(typeof(MovieProfile));
         services.AddAutoMapper(typeof(UserProfile));
         services.AddAutoMapper(typeof(OccupationProfile));
+        services.AddAutoMapper(typeof(UserMovieProfile));
 
         RegisterExceptionHandler();
 
