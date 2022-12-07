@@ -174,7 +174,7 @@ namespace MovieLibraryOO.Services
 
                                 if (presentMovieRating == null)
                                 {
-                                    Console.WriteLine($"The user with id {ratingUserIdNum}, has already rated the movie with id {ratingMovieIdNum}");
+                                    Console.WriteLine($"The user with id {ratingUserIdNum}, has not rated the movie with id {ratingMovieIdNum}");
                                 }
                                 else
                                 {
